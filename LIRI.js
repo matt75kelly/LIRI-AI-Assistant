@@ -52,10 +52,13 @@ function urlConvert (string){
 // Utilizes recursion to bring user back to the beginning after successful task completion.
 function askLiri(userData){
     let userRequest = (userData[0] === undefined)? "": userData[0].toLowerCase();
+    // User Included a Valid Liri Task in the Command Line Arguments
     if(validInput(userRequest)){
-        let userInput = (userData.slice(1) === undefined)? userData.slice(1).join(" ").toLowerCase() : {song: "The Sign", movie: "Mr Nobody"};
-        // console.log(userInput);
+        // Determining the user query or setting defaults if not provided
+        let userInput = (userData.slice(1) === undefined)? {song: "The Sign", movie: "Mr Nobody"} : {song: userData.slice(1).join(" ").toLowerCase().trim(), movie: userData.slice(1).join(" ").toLowerCase().trim()};
+
         switch (userRequest){
+            // Twitter Node Package
             case "my-tweets":
                     var client = new Twitter({
                         consumer_key: keys.twitter.consumer_key,
@@ -70,7 +73,7 @@ function askLiri(userData){
                         }
                         else if(!error && response.statusCode === 200){
                             for(var i = 0; i< tweets.length; i++){
-                                console.log(`Name: ${tweets[i].user.name}`);
+                                console.log(`\nName: ${tweets[i].user.name}`);
                                 console.log(`\t Posted on: ${tweets[i].created_at}`);
                                 console.log(`\t Tweet: ${tweets[i].text}\n`)
                             }
@@ -78,15 +81,15 @@ function askLiri(userData){
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("\nLog Updated");
                                     askLiri("")
                                 }
                             });
                         }
                     });
-                    
                     break
 
+                // Spotify Node Package
                 case "spotify-this-song":
                     var spotify = new Spotify({
                         id: keys.spotify.id,
@@ -100,16 +103,16 @@ function askLiri(userData){
                         spotify.request(trackID)
                         .then(function(results) {
                             console.log(`\nSong: ${results.name}`);
-                            console.log(`Artist: ${results.artists[0].name}`);
-                            console.log(`Album: ${results.album.name}`);
-                            console.log(`Released: ${results.album.release_date}`);
-                            console.log(`Preview: ${results.external_urls.spotify}`)
+                            console.log(`\nArtist: ${results.artists[0].name}`);
+                            console.log(`\nAlbum: ${results.album.name}`);
+                            console.log(`\nReleased: ${results.album.release_date}`);
+                            console.log(`\nPreview: ${results.external_urls.spotify}`)
                             console.log(`-------------------`);
                             let log = ` ${userRequest}, ${userInput.song}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("\nLog Updated");
                                     askLiri("")
                                 }
                             });
@@ -119,15 +122,23 @@ function askLiri(userData){
                     });
                     break
                 
+                // OMDB API request call
                 case "movie-this":
                     request.get(`${omdbUrlBase}/?t=${urlConvert(userInput.movie)}&y=&plot=short&apikey=${keys.omdb.consumer_key}`,function(error, response, body){
                         if (!error && response.statusCode === 200) {
-                            console.log(JSON.parse(body));
+                            let data = JSON.parse(body);
+                            console.log(`\nTitle: ${data.Title}`);
+                            console.log(`\nYear: ${data.Year}`);
+                            console.log(`\nRating: ${data.imdbRating}`);
+                            console.log(`\nCountries: ${data.Country}`);
+                            console.log(`\nLanguages: ${data.Language}`);
+                            console.log(`\nPlot: ${data.Plot}`);
+                            console.log(`\nActors: ${data.Actors}`);
                             let log = ` ${userRequest}, ${userInput.movie}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("\nLog Updated");
                                     askLiri("")
                                 }
                             });
@@ -135,6 +146,7 @@ function askLiri(userData){
                     })    
                     break
 
+                // Random task read from a file
                 case "do-what-it-says":
                     fs.readFile("random.txt", "utf-8", (error, data)=>{
                         if(error){
@@ -146,17 +158,21 @@ function askLiri(userData){
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("\nLog Updated");
                                     askLiri(data);
                                 }
                             });
                         }
                     });
                     break
+
+                // Error Catching
                 default:
                     console.log(`\n\nI'm sorry. I do not understand what you mean by ${userRequest} or by ${userInput}`);
+                    askLiri("");
         }
     }
+    // User did not provide valid command line arguments. We will ask the user to provide information
     else {
         inquire.prompt([
             {
@@ -186,6 +202,7 @@ function askLiri(userData){
             let movie = answers.userMovie;
 
             switch (liriTask){
+                // Twitter Package
                 case "my-tweets":
                     var client = new Twitter({
                         consumer_key: keys.twitter.consumer_key,
@@ -200,7 +217,7 @@ function askLiri(userData){
                         }
                         else if(!error && response.statusCode === 200){
                             for(var i = 0; i< tweets.length; i++){
-                                console.log(`Name: ${tweets[i].user.name}`);
+                                console.log(`\nName: ${tweets[i].user.name}`);
                                 console.log(`\t Posted on: ${tweets[i].created_at}`);
                                 console.log(`\t Tweet: ${tweets[i].text}\n`)
                             }
@@ -208,7 +225,7 @@ function askLiri(userData){
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("/nLog Updated");
                                     askLiri("")
                                 }
                             });
@@ -216,6 +233,7 @@ function askLiri(userData){
                     });
                     break
 
+                // Spotify Package
                 case "spotify-this-song":
                     var spotify = new Spotify({
                         id: keys.spotify.id,
@@ -229,16 +247,16 @@ function askLiri(userData){
                         spotify.request(trackID)
                         .then(function(results) {
                             console.log(`\nSong: ${results.name}`);
-                            console.log(`Artist: ${results.artists[0].name}`);
-                            console.log(`Album: ${results.album.name}`);
-                            console.log(`Released: ${results.album.release_date}`);
-                            console.log(`Preview: ${results.external_urls.spotify}`)
+                            console.log(`\nArtist: ${results.artists[0].name}`);
+                            console.log(`\nAlbum: ${results.album.name}`);
+                            console.log(`\nReleased: ${results.album.release_date}`);
+                            console.log(`\nPreview: ${results.external_urls.spotify}`)
                             console.log(`-------------------`);
                             let log = ` ${liriTask}, ${song}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("\nLog Updated");
                                     askLiri("")
                                 }
                             });
@@ -248,15 +266,23 @@ function askLiri(userData){
                     });
                     break
                 
+                // OMDB API Request
                 case "movie-this":
                     request.get(`${omdbUrlBase}/?t=${urlConvert(movie)}&y=&plot=short&apikey=${keys.omdb.consumer_key}`,function(error, response, body){
                         if (!error && response.statusCode === 200) {
-                            console.log(JSON.parse(body));
+                            let data = JSON.parse(body);
+                            console.log(`\nTitle: ${data.Title}`);
+                            console.log(`\nYear: ${data.Year}`);
+                            console.log(`\nRating: ${data.imdbRating}`);
+                            console.log(`\nCountries: ${data.Country}`);
+                            console.log(`\nLanguages: ${data.Language}`);
+                            console.log(`\nPlot: ${data.Plot}`);
+                            console.log(`\nActors: ${data.Actors}`);
                             let log = ` ${liriTask}, ${movie}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("\nLog Updated");
                                     askLiri("")
                                 }
                             });
@@ -264,6 +290,7 @@ function askLiri(userData){
                     });
                     break
 
+                // Reading a random Task from a file
                 case "do-what-it-says":
                     fs.readFile("random.txt", "utf-8", (error, data)=>{
                         if(error){
@@ -278,7 +305,7 @@ function askLiri(userData){
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
-                                    console.log("Log Updated");
+                                    console.log("\nLog Updated");
                                     askLiri(input)
                                 }
                             });
@@ -286,6 +313,7 @@ function askLiri(userData){
                     });
                     break
                 
+                // Reporting the Most recent Liri Tasks sucessfully executed
                 case "what-have-I-searched":
                     fs.readFile("log.txt", "utf-8", (error, data) =>{
                         if(error){
@@ -305,6 +333,7 @@ function askLiri(userData){
                     });
                     break
 
+                // An option for exiting the program gracefully
                 case "nothing-right-now-Liri":
                     console.log("\nAlright. Just let me know if I can be of assistance.");
                     console.log("\nBye for now.");
