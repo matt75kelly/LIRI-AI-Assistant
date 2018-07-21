@@ -74,7 +74,7 @@ function askLiri(userData){
                                 console.log(`\t Posted on: ${tweets[i].created_at}`);
                                 console.log(`\t Tweet: ${tweets[i].text}\n`)
                             }
-                            let log = ` ${userRequest}`;
+                            let log = ` ${userRequest}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -105,7 +105,7 @@ function askLiri(userData){
                             console.log(`Released: ${results.album.release_date}`);
                             console.log(`Preview: ${results.external_urls.spotify}`)
                             console.log(`-------------------`);
-                            let log = ` ${userRequest}, ${userInput}`;
+                            let log = ` ${userRequest}, ${userInput.song}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -123,7 +123,7 @@ function askLiri(userData){
                     request.get(`${omdbUrlBase}/?t=${urlConvert(userInput.movie)}&y=&plot=short&apikey=${keys.omdb.consumer_key}`,function(error, response, body){
                         if (!error && response.statusCode === 200) {
                             console.log(JSON.parse(body));
-                            let log = ` ${userRequest}, ${userInput}`;
+                            let log = ` ${userRequest}, ${userInput.movie}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -142,7 +142,7 @@ function askLiri(userData){
                         }
                         else{
                             console.log(data);
-                            let log = ` ${userRequest}, ${data.join(" ")}`;
+                            let log = ` ${userRequest}, ${data.join(" ")}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -162,7 +162,7 @@ function askLiri(userData){
             {
                 type: "list",
                 message: "\n\nHey, I'm Liri. How can I help you today?\n",
-                choices: ["my-tweets", "spotify-this-song", "movie-this", "do-what-it-says" ],
+                choices: ["my-tweets", "spotify-this-song", "movie-this", "do-what-it-says", "what-have-I-searched", "nothing-right-now-Liri"],
                 name: "action",
                 default: "do-what-it-says"
             },
@@ -204,7 +204,7 @@ function askLiri(userData){
                                 console.log(`\t Posted on: ${tweets[i].created_at}`);
                                 console.log(`\t Tweet: ${tweets[i].text}\n`)
                             }
-                            let log = ` ${liriTask}`;
+                            let log = ` ${liriTask}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -234,7 +234,7 @@ function askLiri(userData){
                             console.log(`Released: ${results.album.release_date}`);
                             console.log(`Preview: ${results.external_urls.spotify}`)
                             console.log(`-------------------`);
-                            let log = ` ${liriTask}, ${song}`;
+                            let log = ` ${liriTask}, ${song}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -252,7 +252,7 @@ function askLiri(userData){
                     request.get(`${omdbUrlBase}/?t=${urlConvert(movie)}&y=&plot=short&apikey=${keys.omdb.consumer_key}`,function(error, response, body){
                         if (!error && response.statusCode === 200) {
                             console.log(JSON.parse(body));
-                            let log = ` ${liriTask}, ${movie}`;
+                            let log = ` ${liriTask}, ${movie}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -274,7 +274,7 @@ function askLiri(userData){
                             let random = Math.floor(Math.random() * instruct.length);
                             let input = instruct[random].split(",");
                             console.log(input);
-                            let log = ` ${liriTask}, ${input}`;
+                            let log = ` ${liriTask}, ${input}|`;
                             fs.appendFile("log.txt", log, err =>{
                                 if(err) console.log(err);
                                 else {
@@ -285,7 +285,30 @@ function askLiri(userData){
                         }
                     });
                     break
+                
+                case "what-have-I-searched":
+                    fs.readFile("log.txt", "utf-8", (error, data) =>{
+                        if(error){
+                            return console.log(error);
+                        }
+                        else{
+                            console.log("\nHere are your last 12 searches:")
+                            let instruct = data.split("|");
+                            let entries = (instruct.length < 12)? instruct.length : 12;
+                            console.log(instruct.length + " " + entries);
+                            for(var i = instruct.length - entries; i < instruct.length; i++){
+                                let input = (instruct[i].indexOf("," > 0))? instruct[i]: instruct[i].split(", ").join(" ");
+                                console.log(`\n${input}`);         
+                            }
+                            askLiri("");
+                        }
+                    });
+                    break
 
+                case "nothing-right-now-Liri":
+                    console.log("\nAlright. Just let me know if I can be of assistance.");
+                    console.log("\nBye for now.");
+                    break
                 default:
                     console.log(`\n\nI'm sorry. I do not understand what you mean by ${liriTask}.`);
                     askLiri("");
